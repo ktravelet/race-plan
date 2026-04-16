@@ -3,1221 +3,981 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>100km Ride Training Plan</title>
+<title>100km Race Plan</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
-
   :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c28;
-    --border: #2a2a3d;
-    --accent: #e8ff47;
-    --accent2: #47c8ff;
-    --accent3: #ff6b47;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --zone1: #4a9eff;
-    --zone2: #47d47a;
-    --zone3: #f5c842;
-    --zone4: #ff8c47;
-    --zone5: #ff4747;
+    --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c28;--border:#2a2a3d;
+    --accent:#e8ff47;--accent2:#47c8ff;--accent3:#ff6b47;
+    --text:#e8e8f0;--muted:#6b6b8a;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container { max-width: 860px; margin: 0 auto; padding: 36px 20px; position: relative; z-index: 1; }
-
-  .header { margin-bottom: 32px; animation: fadeDown 0.5s ease both; }
-  .header-tag { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.25em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-  .header-tag::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); max-width: 180px; }
-  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 9vw, 88px); line-height: 0.9; color: var(--text); margin-bottom: 12px; }
-  h1 span { color: var(--accent); }
-  .header-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
-
-  .race-bar { background: linear-gradient(135deg, rgba(232,255,71,0.08), rgba(71,200,255,0.04)); border: 1px solid rgba(232,255,71,0.3); border-radius: 12px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; animation: fadeUp 0.5s 0.05s ease both; flex-wrap: wrap; gap: 10px; }
-  .race-bar-left h3 { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-  .race-date { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--text); line-height: 1; }
-  .days-left-num { font-family: 'Bebas Neue', sans-serif; font-size: 52px; color: var(--accent3); line-height: 1; }
-  .days-left-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; text-align: right; }
-
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; animation: fadeUp 0.5s 0.1s ease both; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
-  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--accent); line-height: 1; margin-bottom: 3px; }
-  .stat-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-
-  .schedule-legend { background: rgba(71,200,255,0.05); border: 1px solid rgba(71,200,255,0.2); border-radius: 10px; padding: 14px 18px; margin-bottom: 22px; animation: fadeUp 0.5s 0.12s ease both; }
-  .schedule-legend-title { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--accent2); text-transform: uppercase; margin-bottom: 10px; }
-  .sched-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .sched-day { border-radius: 6px; padding: 8px 4px; text-align: center; font-family: 'DM Mono', monospace; font-size: 10px; border: 1px solid; }
-  .sched-day .day-abbr { font-size: 11px; font-weight: 500; margin-bottom: 4px; }
-  .sched-day .day-type { font-size: 8px; opacity: 0.8; line-height: 1.3; }
-  .sched-active { color: var(--accent2); border-color: var(--accent2); background: rgba(71,200,255,0.08); }
-  .sched-optional { color: var(--accent); border-color: rgba(232,255,71,0.4); background: rgba(232,255,71,0.05); }
-  .sched-rest { color: var(--muted); border-color: var(--border); background: transparent; opacity: 0.5; }
-
-  .ftp-zones { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 24px; animation: fadeUp 0.5s 0.14s ease both; }
-  .ftp-zones h3 { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
-  .ftp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-  .ftp-cell { border-radius: 5px; padding: 7px 5px; text-align: center; border: 1px solid; }
-  .ftp-cell .z { font-family: 'Bebas Neue', sans-serif; font-size: 16px; line-height: 1; }
-  .ftp-cell .w { font-family: 'DM Mono', monospace; font-size: 7px; margin-top: 3px; opacity: 0.8; }
-  .ftp-cell .n { font-family: 'DM Mono', monospace; font-size: 7px; margin-top: 2px; opacity: 0.6; line-height: 1.2; }
-  .z1c { color: #4a9eff; border-color: #4a9eff; background: rgba(74,158,255,0.08); }
-  .z2c { color: #47d47a; border-color: #47d47a; background: rgba(71,212,122,0.08); }
-  .z3c { color: #f5c842; border-color: #f5c842; background: rgba(245,200,66,0.08); }
-  .z4c { color: #ff8c47; border-color: #ff8c47; background: rgba(255,140,71,0.08); }
-  .z5c { color: #ff4747; border-color: #ff4747; background: rgba(255,71,71,0.08); }
-  .z6c { color: #d447ff; border-color: #d447ff; background: rgba(212,71,255,0.08); }
-  .z7c { color: #ff47a0; border-color: #ff47a0; background: rgba(255,71,160,0.08); }
-
-  .phase { margin-bottom: 24px; }
-  .phase-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-  .phase-num { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--accent); line-height: 1; opacity: 0.2; }
-  .phase-info h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.05em; }
-  .phase-info p { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .phase-badge { margin-left: auto; background: var(--accent); color: var(--bg); font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
-
-  .week { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; transition: border-color 0.2s; }
-  .week:hover { border-color: rgba(232,255,71,0.2); }
-  .week-header { display: flex; align-items: center; padding: 13px 16px; cursor: pointer; gap: 12px; user-select: none; }
-  .week-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); line-height: 1; min-width: 40px; }
-  .week-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-  .week-meta { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
-  .week-toggle { margin-left: auto; width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 11px; transition: all 0.2s; flex-shrink: 0; }
-  .week.open .week-toggle { border-color: var(--accent); color: var(--accent); transform: rotate(180deg); }
-  .week-body { display: none; padding: 0 16px 16px; }
-  .week.open .week-body { display: block; }
-
-  .days-grid { display: flex; flex-direction: column; gap: 5px; }
-  .day-row { display: grid; grid-template-columns: 68px 1fr; gap: 10px; align-items: start; background: var(--surface2); border-radius: 7px; padding: 10px 13px; border: 1px solid var(--border); }
-  .day-name { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding-top: 3px; }
-  .workout-block { display: flex; flex-direction: column; gap: 2px; }
-
-  /* Clickable class link */
-  .class-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    text-decoration: none;
-    transition: color 0.15s;
-    line-height: 1.3;
-  }
-  .class-link:hover { color: var(--accent); }
-  .class-link .link-icon {
-    font-size: 10px;
-    opacity: 0;
-    transition: opacity 0.15s;
-    flex-shrink: 0;
-  }
-  .class-link:hover .link-icon { opacity: 1; }
-
-  /* Strength link — slightly different color */
-  .class-link.strength { color: #c8c8e0; }
-  .class-link.strength:hover { color: var(--accent2); }
-
-  .block-dur { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent2); font-weight: 400; margin-left: 2px; }
-  .block-desc { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.4; margin-top: 1px; }
-  .block-zones { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
-
-  .zone-tag { font-family: 'DM Mono', monospace; font-size: 8px; padding: 1px 5px; border-radius: 3px; border: 1px solid; }
-  .z1 { color: #4a9eff; border-color: #4a9eff; }
-  .z2 { color: #47d47a; border-color: #47d47a; }
-  .z3 { color: #f5c842; border-color: #f5c842; }
-  .z4 { color: #ff8c47; border-color: #ff8c47; }
-  .z5 { color: #ff4747; border-color: #ff4747; }
-
-  .stack-divider { display: flex; align-items: center; gap: 5px; margin: 5px 0; }
-  .stack-divider span { font-family: 'DM Mono', monospace; font-size: 8px; color: var(--accent2); letter-spacing: 0.1em; opacity: 0.5; }
-  .stack-divider::before, .stack-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .opt-badge { display: inline-flex; align-items: center; font-family: 'DM Mono', monospace; font-size: 8px; color: var(--accent); border: 1px solid rgba(232,255,71,0.4); border-radius: 3px; padding: 1px 5px; letter-spacing: 0.05em; margin-left: 4px; }
-
-  .rest-row { opacity: 0.35; }
-  .optional-row { border-color: rgba(232,255,71,0.2) !important; background: rgba(232,255,71,0.03) !important; }
-
-  .tip-box { background: rgba(232,255,71,0.04); border: 1px solid rgba(232,255,71,0.16); border-radius: 7px; padding: 10px 13px; margin-top: 10px; }
-  .tip-box-header { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
-  .tip-box p { font-size: 11px; color: var(--muted); line-height: 1.6; }
-
-  .race-day-row { border-color: var(--accent) !important; background: rgba(232,255,71,0.05) !important; }
-  .race-day-row .day-name { color: var(--accent) !important; opacity: 1 !important; }
-
-  @keyframes fadeDown { from { opacity:0; transform: translateY(-16px); } to { opacity:1; transform: translateY(0); } }
-  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
-
-  @media (max-width: 560px) {
-    .stats { grid-template-columns: repeat(2,1fr); }
-    .ftp-grid, .sched-grid { grid-template-columns: repeat(4,1fr); }
-  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,255,71,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,255,71,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .container{max-width:860px;margin:0 auto;padding:36px 20px;position:relative;z-index:1;}
+  .header{margin-bottom:32px;animation:fadeDown .5s ease both;}
+  .header-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.25em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .header-tag::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--accent),transparent);max-width:180px;}
+  h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,9vw,88px);line-height:.9;color:var(--text);margin-bottom:12px;}
+  h1 span{color:var(--accent);}
+  .header-sub{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.05em;}
+  .race-bar{background:linear-gradient(135deg,rgba(232,255,71,.08),rgba(71,200,255,.04));border:1px solid rgba(232,255,71,.3);border-radius:12px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;animation:fadeUp .5s .05s ease both;flex-wrap:wrap;gap:10px;}
+  .race-bar-left h3{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:4px;}
+  .race-date{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--text);line-height:1;}
+  .days-left-num{font-family:'Bebas Neue',sans-serif;font-size:52px;color:#ff6b47;line-height:1;}
+  .days-left-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;text-align:right;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;animation:fadeUp .5s .1s ease both;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+  .stat-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);line-height:1;margin-bottom:3px;}
+  .stat-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+  .sched-wrap{background:rgba(71,200,255,.05);border:1px solid rgba(71,200,255,.2);border-radius:10px;padding:14px 18px;margin-bottom:22px;animation:fadeUp .5s .12s ease both;}
+  .sched-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--accent2);text-transform:uppercase;margin-bottom:10px;}
+  .sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .sched-day{border-radius:6px;padding:8px 4px;text-align:center;font-family:'DM Mono',monospace;font-size:10px;border:1px solid;}
+  .sched-day .da{font-size:11px;font-weight:500;margin-bottom:4px;}
+  .sched-day .dt{font-size:8px;opacity:.8;line-height:1.3;}
+  .sa{color:var(--accent2);border-color:var(--accent2);background:rgba(71,200,255,.08);}
+  .so{color:var(--accent);border-color:rgba(232,255,71,.4);background:rgba(232,255,71,.05);}
+  .sr{color:var(--muted);border-color:var(--border);background:transparent;opacity:.5;}
+  .ftp-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:24px;animation:fadeUp .5s .14s ease both;}
+  .ftp-wrap h3{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .ftp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+  .ftp-cell{border-radius:5px;padding:7px 5px;text-align:center;border:1px solid;}
+  .ftp-cell .z{font-family:'Bebas Neue',sans-serif;font-size:16px;line-height:1;}
+  .ftp-cell .w{font-family:'DM Mono',monospace;font-size:7px;margin-top:3px;opacity:.8;}
+  .ftp-cell .n{font-family:'DM Mono',monospace;font-size:7px;margin-top:2px;opacity:.6;line-height:1.2;}
+  .z1c{color:#4a9eff;border-color:#4a9eff;background:rgba(74,158,255,.08);}
+  .z2c{color:#47d47a;border-color:#47d47a;background:rgba(71,212,122,.08);}
+  .z3c{color:#f5c842;border-color:#f5c842;background:rgba(245,200,66,.08);}
+  .z4c{color:#ff8c47;border-color:#ff8c47;background:rgba(255,140,71,.08);}
+  .z5c{color:#ff4747;border-color:#ff4747;background:rgba(255,71,71,.08);}
+  .z6c{color:#d447ff;border-color:#d447ff;background:rgba(212,71,255,.08);}
+  .z7c{color:#ff47a0;border-color:#ff47a0;background:rgba(255,71,160,.08);}
+  .phase{margin-bottom:24px;}
+  .phase-header{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .phase-num{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--accent);line-height:1;opacity:.2;}
+  .phase-info h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;}
+  .phase-info p{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+  .phase-badge{margin-left:auto;background:var(--accent);color:var(--bg);font-family:'DM Mono',monospace;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+  .week{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;transition:border-color .2s;}
+  .week:hover{border-color:rgba(232,255,71,.2);}
+  .week-header{display:flex;align-items:center;padding:13px 16px;cursor:pointer;gap:12px;user-select:none;}
+  .wn{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);line-height:1;min-width:40px;}
+  .wt{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .wm{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;}
+  .wtog{margin-left:auto;width:24px;height:24px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;transition:all .2s;flex-shrink:0;}
+  .week.open .wtog{border-color:var(--accent);color:var(--accent);transform:rotate(180deg);}
+  .week-body{display:none;padding:0 16px 16px;}
+  .week.open .week-body{display:block;}
+  .days{display:flex;flex-direction:column;gap:5px;}
+  .dr{display:grid;grid-template-columns:68px 1fr;gap:10px;align-items:start;background:var(--surface2);border-radius:7px;padding:10px 13px;border:1px solid var(--border);}
+  .dn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;padding-top:3px;}
+  .wb{display:flex;flex-direction:column;gap:2px;}
+  a.cl{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text);text-decoration:none;transition:color .15s;line-height:1.3;}
+  a.cl:hover{color:var(--accent);}
+  a.cl .li{font-size:10px;opacity:0;transition:opacity .15s;flex-shrink:0;}
+  a.cl:hover .li{opacity:1;}
+  a.cl.str{color:#c8c8e0;}
+  a.cl.str:hover{color:var(--accent2);}
+  .bd{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent2);font-weight:400;margin-left:2px;}
+  .desc{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.4;margin-top:1px;}
+  .zz{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px;}
+  .zt{font-family:'DM Mono',monospace;font-size:8px;padding:1px 5px;border-radius:3px;border:1px solid;}
+  .z1{color:#4a9eff;border-color:#4a9eff;}.z2{color:#47d47a;border-color:#47d47a;}.z3{color:#f5c842;border-color:#f5c842;}.z4{color:#ff8c47;border-color:#ff8c47;}.z5{color:#ff4747;border-color:#ff4747;}
+  .sdiv{display:flex;align-items:center;gap:5px;margin:5px 0;}
+  .sdiv span{font-family:'DM Mono',monospace;font-size:8px;color:var(--accent2);letter-spacing:.1em;opacity:.5;}
+  .sdiv::before,.sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
+  .ob{display:inline-flex;align-items:center;font-family:'DM Mono',monospace;font-size:8px;color:var(--accent);border:1px solid rgba(232,255,71,.4);border-radius:3px;padding:1px 5px;letter-spacing:.05em;margin-left:4px;}
+  .rest{opacity:.35;}
+  .opt{border-color:rgba(232,255,71,.2)!important;background:rgba(232,255,71,.03)!important;}
+  .tip{background:rgba(232,255,71,.04);border:1px solid rgba(232,255,71,.16);border-radius:7px;padding:10px 13px;margin-top:10px;}
+  .tip-h{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:5px;}
+  .tip p{font-size:11px;color:var(--muted);line-height:1.6;}
+  .racerow{border-color:var(--accent)!important;background:rgba(232,255,71,.05)!important;}
+  .racerow .dn{color:var(--accent)!important;opacity:1!important;}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.ftp-grid,.sched-grid{grid-template-columns:repeat(4,1fr)}}
 </style>
 </head>
 <body>
 <div class="container">
 
-  <div class="header">
-    <div class="header-tag">Peloton Power Zone Plan · v4</div>
-    <h1>100<span>KM</span><br>RACE PLAN</h1>
-    <div class="header-sub">FTP: 250w · Mon/Tue/Thu/Fri · 45 min rides · Optional 60 min Fridays · 10 weeks · Click any class to open on Peloton</div>
-  </div>
+<div class="header">
+  <div class="header-tag">Peloton Power Zone Plan · Final</div>
+  <h1>100<span>KM</span><br>RACE PLAN</h1>
+  <div class="header-sub">FTP: 250w · Mon/Tue/Thu/Fri · 45 min rides · Optional 60 min Fridays · 10 weeks · Unique class every session</div>
+</div>
 
-  <div class="race-bar">
-    <div class="race-bar-left">
-      <h3>Race Day</h3>
-      <div class="race-date">JUNE 8, 2025</div>
-    </div>
-    <div>
-      <div class="days-left-num" id="daysNum">—</div>
-      <div class="days-left-label">Days to Go</div>
-    </div>
-  </div>
+<div class="race-bar">
+  <div class="race-bar-left"><h3>Race Day</h3><div class="race-date">JUNE 8, 2025</div></div>
+  <div><div class="days-left-num" id="daysNum">—</div><div class="days-left-label">Days to Go</div></div>
+</div>
 
-  <div class="stats">
-    <div class="stat"><div class="stat-val">250</div><div class="stat-label">FTP Watts</div></div>
-    <div class="stat"><div class="stat-val">45</div><div class="stat-label">Min / Ride</div></div>
-    <div class="stat"><div class="stat-val">4</div><div class="stat-label">Days / Week</div></div>
-    <div class="stat"><div class="stat-val">10</div><div class="stat-label">Weeks Out</div></div>
-  </div>
+<div class="stats">
+  <div class="stat"><div class="stat-val">250</div><div class="stat-label">FTP Watts</div></div>
+  <div class="stat"><div class="stat-val">45</div><div class="stat-label">Min / Ride</div></div>
+  <div class="stat"><div class="stat-val">4</div><div class="stat-label">Days / Week</div></div>
+  <div class="stat"><div class="stat-val">10</div><div class="stat-label">Weeks Out</div></div>
+</div>
 
-  <div class="schedule-legend">
-    <div class="schedule-legend-title">Weekly Schedule</div>
-    <div class="sched-grid">
-      <div class="sched-day sched-active"><div class="day-abbr">MON</div><div class="day-type">Ride + UB Push</div></div>
-      <div class="sched-day sched-active"><div class="day-abbr">TUE</div><div class="day-type">Ride + Core</div></div>
-      <div class="sched-day sched-rest"><div class="day-abbr">WED</div><div class="day-type">Rest</div></div>
-      <div class="sched-day sched-active"><div class="day-abbr">THU</div><div class="day-type">Ride + UB Pull</div></div>
-      <div class="sched-day sched-optional"><div class="day-abbr">FRI</div><div class="day-type">Ride + Core ✦ opt 60</div></div>
-      <div class="sched-day sched-rest"><div class="day-abbr">SAT</div><div class="day-type">Rest</div></div>
-      <div class="sched-day sched-rest"><div class="day-abbr">SUN</div><div class="day-type">Rest</div></div>
-    </div>
-  </div>
-
-  <div class="ftp-zones">
-    <h3>Your Power Zones at FTP 250w</h3>
-    <div class="ftp-grid">
-      <div class="ftp-cell z1c"><div class="z">Z1</div><div class="w">&lt;143w</div><div class="n">Recovery</div></div>
-      <div class="ftp-cell z2c"><div class="z">Z2</div><div class="w">143–180w</div><div class="n">Endurance</div></div>
-      <div class="ftp-cell z3c"><div class="z">Z3</div><div class="w">181–205w</div><div class="n">Tempo</div></div>
-      <div class="ftp-cell z4c"><div class="z">Z4</div><div class="w">206–240w</div><div class="n">Threshold</div></div>
-      <div class="ftp-cell z5c"><div class="z">Z5</div><div class="w">241–275w</div><div class="n">VO2 Max</div></div>
-      <div class="ftp-cell z6c"><div class="z">Z6</div><div class="w">276–325w</div><div class="n">Anaerobic</div></div>
-      <div class="ftp-cell z7c"><div class="z">Z7</div><div class="w">&gt;325w</div><div class="n">Neuro</div></div>
-    </div>
-  </div>
-
-  <!-- ═══ PHASE 1 ═══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">01</div>
-      <div class="phase-info">
-        <h2>BASE REBUILD</h2>
-        <p>Weeks 1–3 · Build cycling legs · Z2 dominant · Stacked strength</p>
-      </div>
-      <div class="phase-badge">Foundation</div>
-    </div>
-
-    <!-- W1 -->
-    <div class="week open" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W1</div>
-        <div>
-          <div class="week-title">Get the Legs Back</div>
-          <div class="week-meta"><span>4 rides · ~3 hrs saddle</span><span>All Z2 · Light stacks</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Steady Z2 throughout · Rock music · Great intro class</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=d2bc23990796473bb78edf128aa3dc9d" target="_blank">
-                  💪 10 min Arms & Shoulders — Rebecca Kennedy <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Chest, shoulders, triceps · Push focus</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Easy Z2 · Let legs adapt · No heroics</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Planks, dead bugs, bird dogs · Core & obliques</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="day-row rest-row">
-            <div class="day-name">Wed</div>
-            <div class="day-workout"><div class="class-link" style="pointer-events:none">REST</div><div class="block-desc">Full recovery</div></div>
-          </div>
-
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=57464fed06a947d886de1c8c6a6317b6" target="_blank">
-                  🚴 45 min PZ Endurance 80s — Denis Morton <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 base · 3x5 min Z3 intervals as taste of tempo</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3 Intro</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=6f8dd89bfb264c359ebacae7ad3beb74" target="_blank">
-                  💪 10 min Arms & Light Weights — Alex Toussaint <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Back, biceps, rear delts · Pull focus</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=f9e704ee368348dc84352c086c5ad4c4" target="_blank">
-                  🚴 45 min PZ Endurance 90s — Sam Yo <span class="block-dur">45 min</span> <span class="opt-badge">✦ OPT 60</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pure Z2 · If doing 60 min, stay easy the extra 15 — no pushing</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2 Only</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Core finisher · Short and sharp</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-        <div class="tip-box">
-          <div class="tip-box-header">Week 1 Note</div>
-          <p>Your lungs are ready from running — your sit bones aren't. Saddle soreness is normal for 5–7 days. Use chamois cream, keep cadence 85–95 rpm, and stay in Z2. The optional 60 min Friday is just extra Z2 — not harder, just longer.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- W2 -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W2</div>
-        <div>
-          <div class="week-title">First Real Tempo Work</div>
-          <div class="week-meta"><span>4 rides · ~3.5 hrs saddle</span><span>Z3 Monday · Z4 Thursday</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=57464fed06a947d886de1c8c6a6317b6" target="_blank">
-                  🚴 45 min PZ Endurance Classic Rock — Denis Morton <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 base · 3x7 min Z3 blocks, 3 min Z1 between</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Tunde Oyeneyin <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Shoulders, triceps, biceps · Add a little weight vs Week 1</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=52751fb80f4840788f2e1d1996fcc439" target="_blank">
-                  🚴 45 min PZ Endurance — Christian Vande Velde <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Easy Z2 recovery · Let Monday's work settle</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2 Easy</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Anti-rotation and stability focus</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">3x6 min Z4 @ 210–235w · Full Z1 recovery between · First real threshold work</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4 Threshold</span><span class="zone-tag z1">Z1 Rest</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=cca5dd05f9cb4141bb29e3a71c084610" target="_blank">
-                  💪 10 min Arms & Light Weights — Ben Alldis <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pull focus · Rows and curls · Designed to stack with cycling</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=590bdb4f04c34b80873d33f74e960b7d" target="_blank">
-                  🚴 45 min PZ Endurance (or 60 min) — Matt Wilpers <span class="block-dur">45/60 min</span> <span class="opt-badge">✦ OPT 60</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Easy Z2 only · Recovery after Thursday's hard effort · Link goes to 60 min version</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=bd91c70d01764c11baec95ba447cc424" target="_blank">
-                  🔥 10 min Core Strength — Erik Jäger <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Core finisher</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W3 Recovery -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W3</div>
-        <div>
-          <div class="week-title">Recovery Week — Volume Drops 25%</div>
-          <div class="week-meta"><span>4 rides · ~2.5 hrs saddle</span><span>Absorb the adaptation</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">30 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min mark · Z1-Z2 only · Feel the freshness</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Chase Tucker <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Higher reps, lighter weight · Recovery week</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=52751fb80f4840788f2e1d1996fcc439" target="_blank">
-                  🚴 45 min PZ Endurance — Christian Vande Velde <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Z2 · 2x6 min Z3, controlled and easy</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Peloton Core</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Easy Z2 · Nothing more — you're recovering</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=6f8dd89bfb264c359ebacae7ad3beb74" target="_blank">
-                  💪 10 min Arms & Light Weights — Alex Toussaint <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Light biceps and triceps</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=f9e704ee368348dc84352c086c5ad4c4" target="_blank">
-                  🚴 45 min PZ Endurance 90s — Sam Yo <span class="block-dur">30 min</span> <span class="opt-badge">✦ OPT 45</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Pure Z1-Z2 · Recovery week Friday stays easy</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">5 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Quick finisher only — stop halfway</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-        <div class="tip-box">
-          <div class="tip-box-header">Recovery Week Rule</div>
-          <p>Fitness is built during recovery, not during hard sessions. The reduced load this week lets your body actually adapt. Notice how much better your legs feel by Friday — that's the point.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ PHASE 2 ═══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">02</div>
-      <div class="phase-info">
-        <h2>THRESHOLD BUILD</h2>
-        <p>Weeks 4–7 · Longer Z3-Z4 blocks · FTP re-test Week 7</p>
-      </div>
-      <div class="phase-badge">Key Phase</div>
-    </div>
-
-    <!-- W4 -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W4</div>
-        <div>
-          <div class="week-title">Building the Threshold Engine</div>
-          <div class="week-meta"><span>4 rides · ~3.5 hrs saddle</span><span>Z3 Monday · Z4 Thursday</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 · 3x10 min Z3, 3 min Z1 between · Longest Z3 blocks yet</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3 Blocks</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=d2bc23990796473bb78edf128aa3dc9d" target="_blank">
-                  💪 10 min Arms & Shoulders — Rebecca Kennedy <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Progressive overload — heavier than Phase 1</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Easy Z2 · Active recovery from Monday</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2 Easy</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Peloton Core Strength</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">4x6 min Z4 @ 212–235w · 3 min Z1 between · This is your key session</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4</span><span class="zone-tag z1">Z1 Rest</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=cca5dd05f9cb4141bb29e3a71c084610" target="_blank">
-                  💪 10 min Arms & Light Weights — Ben Alldis <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pull day — upper body won't hurt the legs</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=590bdb4f04c34b80873d33f74e960b7d" target="_blank">
-                  🚴 45 min PZ Endurance (or 60 min) — Matt Wilpers <span class="block-dur">45/60 min</span> <span class="opt-badge">✦ OPT 60</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 easy · Flush Thursday's work · Link goes to 60 min version for optional upgrade</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=bd91c70d01764c11baec95ba447cc424" target="_blank">
-                  🔥 10 min Core Strength — Erik Jäger <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Core finisher</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W5 -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W5</div>
-        <div>
-          <div class="week-title">Muscular Endurance Push</div>
-          <div class="week-meta"><span>4 rides · ~3.5 hrs saddle</span><span>Longer Z4 · Harder Tuesday</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=57464fed06a947d886de1c8c6a6317b6" target="_blank">
-                  🚴 45 min PZ Endurance Classic Rock — Denis Morton <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 · 2x15 min Z3 sustained · Simulate race pacing</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3 Sustained</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Tunde Oyeneyin <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Push/pull superset for efficiency</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">3x8 min Z4 @ 215–235w · 3 min Z1 between · Toughest Tuesday yet</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4</span><span class="zone-tag z1">Z1</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Peloton Core Strength</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 recovery · Flush Tuesday's threshold work · No heroics</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=6f8dd89bfb264c359ebacae7ad3beb74" target="_blank">
-                  💪 10 min Arms & Light Weights — Alex Toussaint <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Biceps, triceps, rear delts</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=590bdb4f04c34b80873d33f74e960b7d" target="_blank">
-                  🚴 45 min PZ Endurance (or 60 min) — Matt Wilpers <span class="block-dur">45/60 min</span> <span class="opt-badge">✦ OPT 60</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 with 2x8 min Z3 in the middle · If doing 60, add one more Z3 block</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Core finisher</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-        <div class="tip-box">
-          <div class="tip-box-header">Fueling Note — Start Now</div>
-          <p>On rides over 45 min, take in 30–40g carbs per hour from the 20 min mark. Gels, chews, bananas — test what works for your gut now, not on race day.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- W6 Recovery -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W6</div>
-        <div>
-          <div class="week-title">Recovery Week</div>
-          <div class="week-meta"><span>4 rides · ~2.5 hrs saddle</span><span>Volume drops · Intensity maintained</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">30 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Z1-Z2 only · Notice how strong you feel vs Week 1</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Chase Tucker <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">High reps, low weight</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7a062d47bdfc4976acb6f3a8af4f69ac" target="_blank">
-                  🚴 45 min PZ Endurance Classic Rock — Charlotte Weidenbach <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Z2 · 2x7 min Z3 — controlled, not a race</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=bd91c70d01764c11baec95ba447cc424" target="_blank">
-                  🔥 10 min Core Strength — Erik Jäger <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Peloton Core</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Easy Z2 · Let legs bounce back</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=cca5dd05f9cb4141bb29e3a71c084610" target="_blank">
-                  💪 10 min Arms & Light Weights — Ben Alldis <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Light biceps and triceps</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=f9e704ee368348dc84352c086c5ad4c4" target="_blank">
-                  🚴 45 min PZ Endurance 90s — Sam Yo <span class="block-dur">30 min</span> <span class="opt-badge">✦ OPT 45</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Z1-Z2 only · Recovery week — keep Friday easy</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">5 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Quick only — stop halfway</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W7 FTP Re-test -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W7</div>
-        <div>
-          <div class="week-title">FTP Re-Test Week</div>
-          <div class="week-meta"><span>4 rides · ~3 hrs saddle</span><span>Re-test Thursday · Update all zones</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Z1-Z2 only · Save legs for Thursday's re-test</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Tunde Oyeneyin <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Push/pull circuit · Upper body fine before FTP test</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">30 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Z1 only · Preserve legs for Thursday</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Legs unaffected by core work</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST — Legs fresh for FTP test tomorrow</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=c7db2cd34c694167af3c88be75bfefaa" target="_blank">
-                  🔥 20 min FTP Test — Matt Wilpers <span class="block-dur">~60 min total</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Do the 10 min warm-up first (link below), then this · Target: 265–275w · Update zones immediately after</div>
-                <div class="block-zones"><span class="zone-tag z5">Max Effort</span></div>
-              </div>
-              <div class="stack-divider"><span>WARM-UP FIRST</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=4069a151e8f040ecae3a3cf59efb45da" target="_blank">
-                  🔁 10 min FTP Warm Up — Matt Wilpers <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Do this before the FTP test · Stack it first</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=52751fb80f4840788f2e1d1996fcc439" target="_blank">
-                  🚴 45 min PZ Endurance — Christian Vande Velde <span class="block-dur">30 min</span> <span class="opt-badge">✦ OPT 45</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Pure Z1 · Flush legs after FTP test · Use your NEW zones</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=6f8dd89bfb264c359ebacae7ad3beb74" target="_blank">
-                  💪 10 min Arms & Light Weights — Alex Toussaint <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Light — legs recovering, upper body fair game</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-        <div class="tip-box">
-          <div class="tip-box-header">After Re-Test: Update Everything</div>
-          <p>Update zones in Peloton immediately. Every future session now uses your new FTP. Runners typically see a solid jump here — your aerobic engine never fully went away. Expect 265–280w if you've stayed consistent.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ PHASE 3 ═══ -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-num">03</div>
-      <div class="phase-info">
-        <h2>PEAK & TAPER</h2>
-        <p>Weeks 8–10 · Peak intensity · Race-ready taper · June 8</p>
-      </div>
-      <div class="phase-badge">Race Prep</div>
-    </div>
-
-    <!-- W8 -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W8</div>
-        <div>
-          <div class="week-title">Peak Intensity — Biggest Week</div>
-          <div class="week-meta"><span>4 rides · ~3.5 hrs saddle</span><span>Z4-Z5 on Tuesday · Optional 60 on Fri</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 · 2x15 min Z3 sustained · Longest Z3 blocks of the plan</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3 Long</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=d2bc23990796473bb78edf128aa3dc9d" target="_blank">
-                  💪 10 min Arms & Shoulders — Rebecca Kennedy <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Push/pull superset — you're looking strong by now</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">4x6 min Z4 · Last 2 reps push into Z5 @ 245–260w · Hardest ride of the plan</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4</span><span class="zone-tag z5">Z5 Finish</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Keep it short after hard ride</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 recovery · Flush Tuesday · Stay out of Z4</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=cca5dd05f9cb4141bb29e3a71c084610" target="_blank">
-                  💪 10 min Arms & Light Weights — Ben Alldis <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pull day</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=590bdb4f04c34b80873d33f74e960b7d" target="_blank">
-                  🚴 45 min PZ Endurance (or 60 min) — Matt Wilpers <span class="block-dur">45/60 min</span> <span class="opt-badge">✦ OPT 60</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 with 2x12 min Z3 · If 60 min, add a 3rd Z3 block · Best long-ride substitute</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=bd91c70d01764c11baec95ba447cc424" target="_blank">
-                  🔥 10 min Core Strength — Erik Jäger <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Core finisher</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W9 Taper -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W9</div>
-        <div>
-          <div class="week-title">Taper Begins — Stay Sharp</div>
-          <div class="week-meta"><span>4 rides · ~3 hrs saddle</span><span>Volume drops · Edge stays</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Z2 · 2x10 min Z3 — reduced but still present</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span><span class="zone-tag z3">Z3</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Tunde Oyeneyin <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Last heavy upper body session before race</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">45 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">3x6 min Z4 · Keep legs sharp without piling on fatigue</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Peloton Core</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row">
-            <div class="day-name">Thu</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=9391e605d7e74cc1a837298b1869e09b" target="_blank">
-                  🚴 45 min PZ Endurance — Christine D'Ercole <span class="block-dur">35 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 35 min · Z1-Z2 · Legs should feel springy</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=6f8dd89bfb264c359ebacae7ad3beb74" target="_blank">
-                  💪 10 min Arms & Light Weights — Alex Toussaint <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pump only — no fatigue</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row optional-row">
-            <div class="day-name">Fri</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=52751fb80f4840788f2e1d1996fcc439" target="_blank">
-                  🚴 45 min PZ Endurance — Christian Vande Velde <span class="block-dur">30 min</span> <span class="opt-badge">✦ OPT 45</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 30 min · Z2 only · Taper week — resist doing more</div>
-                <div class="block-zones"><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=27c0510036ae4c96b43562d1ccb6506b" target="_blank">
-                  🔥 10 min Core Strength — Andy Speer <span class="block-dur">5 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop halfway · Last core session</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sun</div><div class="day-workout"><div class="block-title">REST</div></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- W10 Race Week -->
-    <div class="week" onclick="toggleWeek(this)">
-      <div class="week-header">
-        <div class="week-num">W10</div>
-        <div>
-          <div class="week-title">Race Week 🏁</div>
-          <div class="week-meta"><span>June 8 · Stay fresh · Trust the work</span></div>
-        </div>
-        <div class="week-toggle">▾</div>
-      </div>
-      <div class="week-body">
-        <div class="days-grid">
-          <div class="day-row">
-            <div class="day-name">Mon</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=8b56b454c9bb4e9f9957301b9518cb2c" target="_blank">
-                  🚴 45 min PZ Endurance — Matt Wilpers <span class="block-dur">25 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 25 min · Z1-Z2 · Keep blood moving, nothing more</div>
-                <div class="block-zones"><span class="zone-tag z1">Z1</span><span class="zone-tag z2">Z2</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=14ec93331ba846cab09fa3381c4f90c3" target="_blank">
-                  💪 10 min Arms & Shoulders — Chase Tucker <span class="block-dur">10 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Pump only — no soreness going into race week</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row">
-            <div class="day-name">Tue</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <a class="class-link" href="https://members.onepeloton.com/classes/cycling?modal=classDetailsModal&classId=7b6f4996c6e843448b006df451d9e231" target="_blank">
-                  🚴 45 min PZ Max — Matt Wilpers <span class="block-dur">20 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Stop at 20 min · Just the 3x1 min Z4 openers at the start · Wakes legs up without tiring them</div>
-                <div class="block-zones"><span class="zone-tag z4">Z4 Openers</span><span class="zone-tag z1">Z1</span></div>
-              </div>
-              <div class="stack-divider"><span>STACK</span></div>
-              <div class="workout-block">
-                <a class="class-link strength" href="https://members.onepeloton.com/classes/strength?modal=classDetailsModal&classId=529a6a2bb018486fb610bb00b4cf4bd7" target="_blank">
-                  🔥 10 min Core Strength — Olivia Amato <span class="block-dur">5 min</span> <span class="link-icon">↗</span>
-                </a>
-                <div class="block-desc">Light only — stop halfway</div>
-              </div>
-            </div>
-          </div>
-          <div class="day-row rest-row"><div class="day-name">Wed</div><div class="day-workout"><div class="block-title">REST · Gear check · Eat well · Hydrate</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Thu</div><div class="day-workout"><div class="block-title">REST · Carb load begins · Sleep 8+ hrs</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Fri</div><div class="day-workout"><div class="block-title">REST · Legs up · Trust your training</div></div></div>
-          <div class="day-row rest-row"><div class="day-name">Sat</div><div class="day-workout"><div class="block-title">REST · Early night · Race prep done</div></div></div>
-          <div class="day-row race-day-row">
-            <div class="day-name">Sun</div>
-            <div class="day-workout">
-              <div class="workout-block">
-                <div class="block-title" style="font-size:13px;font-weight:700;color:var(--accent)">🏁 RACE DAY — 100 KM</div>
-                <div class="block-desc" style="margin-top:4px">Start Z2. Hold Z2-Z3 for km 1–60. Build in last 30km. Fuel every 20–25 min no matter what. You've done the work.</div>
-                <div class="block-zones" style="margin-top:6px"><span class="zone-tag z2">Z2 Start</span><span class="zone-tag z3">Z3 Mid</span><span class="zone-tag z4">Z4 Finish</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="tip-box">
-          <div class="tip-box-header">The One Rule for Race Day</div>
-          <p>Start in Z2. The first 30km will feel embarrassingly easy. That's exactly right. Every watt saved in the first half is a watt available when it matters — km 70–100. The riders who go out hard always crack. You won't.</p>
-        </div>
-      </div>
-    </div>
-
+<div class="sched-wrap">
+  <div class="sched-title">Weekly Schedule</div>
+  <div class="sched-grid">
+    <div class="sched-day sa"><div class="da">MON</div><div class="dt">Ride + UB Push</div></div>
+    <div class="sched-day sa"><div class="da">TUE</div><div class="dt">Ride + Core</div></div>
+    <div class="sched-day sr"><div class="da">WED</div><div class="dt">Rest</div></div>
+    <div class="sched-day sa"><div class="da">THU</div><div class="dt">Ride + UB Pull</div></div>
+    <div class="sched-day so"><div class="da">FRI</div><div class="dt">Ride + Core ✦60</div></div>
+    <div class="sched-day sr"><div class="da">SAT</div><div class="dt">Rest</div></div>
+    <div class="sched-day sr"><div class="da">SUN</div><div class="dt">Rest</div></div>
   </div>
 </div>
 
+<div class="ftp-wrap">
+  <h3>Your Power Zones at FTP 250w</h3>
+  <div class="ftp-grid">
+    <div class="ftp-cell z1c"><div class="z">Z1</div><div class="w">&lt;143w</div><div class="n">Recovery</div></div>
+    <div class="ftp-cell z2c"><div class="z">Z2</div><div class="w">143–180w</div><div class="n">Endurance</div></div>
+    <div class="ftp-cell z3c"><div class="z">Z3</div><div class="w">181–205w</div><div class="n">Tempo</div></div>
+    <div class="ftp-cell z4c"><div class="z">Z4</div><div class="w">206–240w</div><div class="n">Threshold</div></div>
+    <div class="ftp-cell z5c"><div class="z">Z5</div><div class="w">241–275w</div><div class="n">VO2 Max</div></div>
+    <div class="ftp-cell z6c"><div class="z">Z6</div><div class="w">276–325w</div><div class="n">Anaerobic</div></div>
+    <div class="ftp-cell z7c"><div class="z">Z7</div><div class="w">&gt;325w</div><div class="n">Neuro</div></div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 1 ═══ -->
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num">01</div>
+    <div class="phase-info"><h2>BASE REBUILD</h2><p>Weeks 1–3 · Z2 dominant · Stacked strength · Unique class every day</p></div>
+    <div class="phase-badge">Foundation</div>
+  </div>
+
+  <!-- W1 -->
+  <div class="week open" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W1</div><div><div class="wt">Get the Legs Back</div><div class="wm"><span>4 rides · ~3 hrs</span><span>All Z2 · Light stacks</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-matt-wilpers-1581590880" target="_blank">🚴 45 min PZ Endurance — Matt Wilpers · Rock <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 throughout · Great intro ride back to the saddle</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-shoulders-strength-rebecca-kennedy-1678904700" target="_blank">💪 10 min Arms & Shoulders — Rebecca Kennedy · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Chest, shoulders, triceps · Push focus</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-christine-dercole-1697399662" target="_blank">🚴 45 min PZ Endurance — Christine D'Ercole · Alt <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Easy Z2 · Let legs adapt</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Planks, dead bugs, bird dogs</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div><div class="desc">Full recovery</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-80s-ride-denis-morton-1717536320" target="_blank">🚴 45 min PZ Endurance 80s — Denis Morton · Pop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 base · 3x5 min Z3 intervals as first taste of tempo</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3 Intro</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-light-weights-alex-toussaint-1690902000" target="_blank">💪 10 min Arms & Light Weights — Alex Toussaint · Hip-Hop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Back, biceps, rear delts · Pull focus · Designed to stack after cycling</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-90s-ride-sam-yo-1683093300" target="_blank">🚴 45 min PZ Endurance 90s — Sam Yo · Pop <span class="bd">45 min</span><span class="ob">✦ OPT 60</span><span class="li">↗</span></a>
+          <div class="desc">Pure Z2 · If doing 60 min, stay easy the extra 15</div>
+          <div class="zz"><span class="zt z2">Z2 Only</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Core finisher</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div>
+    <div class="tip"><div class="tip-h">Week 1 Note</div><p>Your lungs are ready from running — your sit bones aren't. Saddle soreness is normal days 1–7. Use chamois cream, keep cadence 85–95 rpm, stay in Z2. The optional 60 min Friday is just extra Z2 — not harder, just longer.</p></div>
+    </div>
+  </div>
+
+  <!-- W2 -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W2</div><div><div class="wt">First Real Tempo Work</div><div class="wm"><span>4 rides · ~3.5 hrs</span><span>Z3 Monday · First Z4 Thursday</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-denis-morton-1694553801" target="_blank">🚴 45 min PZ Endurance — Denis Morton · Pop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 base · 3x7 min Z3 blocks, 3 min Z1 between</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-shoulders-strength-tunde-oyeneyin-1711053325" target="_blank">💪 10 min Arms & Shoulders — Tunde Oyeneyin · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Shoulders, triceps, biceps · Add weight vs Week 1</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-edm-ride-hannah-frankson-1707938427" target="_blank">🚴 45 min PZ Endurance EDM — Hannah Frankson · Electronic <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Easy Z2 recovery · Let Monday's work settle</div>
+          <div class="zz"><span class="zt z2">Z2 Easy</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Anti-rotation and stability focus</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-matt-wilpers-1711801537" target="_blank">🚴 45 min PZ Max — Matt Wilpers · Hip-Hop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">3x6 min Z4 @ 210–235w · Full Z1 recovery · First real threshold work</div>
+          <div class="zz"><span class="zt z4">Z4 Threshold</span><span class="zt z1">Z1 Rest</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-light-weights-ben-alldis-1693468800" target="_blank">💪 10 min Arms & Light Weights — Ben Alldis · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Designed to stack after cycling · Rows, pulls</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/60-min-power-zone-endurance-ride-matt-wilpers-1718452577" target="_blank">🚴 45 min PZ Endurance (or 60) — Matt Wilpers · Pop <span class="bd">45/60 min</span><span class="ob">✦ OPT 60</span><span class="li">↗</span></a>
+          <div class="desc">Easy Z2 only · Flush Thursday's effort · Link = 60 min version</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-erik-jager-1698335703" target="_blank">🔥 10 min Core Strength — Erik Jäger · Rock <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Core finisher</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div></div>
+  </div>
+
+  <!-- W3 Recovery -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W3</div><div><div class="wt">Recovery Week — Volume Drops 25%</div><div class="wm"><span>4 rides · ~2.5 hrs</span><span>Absorb the adaptation</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-classic-rock-denis-morton-1677959700" target="_blank">🚴 45 min PZ Endurance Classic Rock — Denis Morton <span class="bd">30 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 30 min · Z1-Z2 only · Feel the freshness</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-shoulders-strength-chase-tucker-1645539120" target="_blank">💪 10 min Arms & Shoulders — Chase Tucker · Hip-Hop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Higher reps, lighter weight · Recovery week</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-hip-hop-hannah-frankson-1711568327" target="_blank">🚴 45 min PZ Endurance Hip Hop — Hannah Frankson <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Z2 · 2x6 min Z3, controlled</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Peloton Core</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-country-ride-denis-morton-1697896490" target="_blank">🚴 45 min PZ Endurance Country — Denis Morton <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Easy Z2 · Nothing more — you're recovering</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-light-weights-alex-toussaint-1690902000" target="_blank">💪 10 min Arms & Light Weights — Alex Toussaint · Hip-Hop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Light biceps and triceps</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-edm-ride-ben-alldis-1696923275" target="_blank">🚴 45 min PZ Endurance EDM — Ben Alldis <span class="bd">30 min</span><span class="ob">✦ OPT 45</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 30 min · Pure Z1-Z2 · Recovery week stays easy</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">5 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop halfway · Quick only</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div>
+    <div class="tip"><div class="tip-h">Recovery Week Rule</div><p>Fitness is built during recovery, not during hard sessions. The reduced load this week lets your body actually adapt. Notice how much better your legs feel by Friday — that's the point.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 2 ═══ -->
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num">02</div>
+    <div class="phase-info"><h2>THRESHOLD BUILD</h2><p>Weeks 4–7 · Longer Z3-Z4 blocks · FTP re-test Week 7</p></div>
+    <div class="phase-badge">Key Phase</div>
+  </div>
+
+  <!-- W4 -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W4</div><div><div class="wt">Building the Threshold Engine</div><div class="wm"><span>4 rides · ~3.5 hrs</span><span>Z3 Monday · Z4 Thursday</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-classic-rock-sam-yo-1719381322" target="_blank">🚴 45 min PZ Endurance Classic Rock — Sam Yo <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 · 3x10 min Z3, 3 min Z1 between · Longest Z3 blocks yet</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3 Blocks</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-arms-shoulders-strength-tunde-oyeneyin-1695758877" target="_blank">💪 20 min Arms & Shoulders — Tunde Oyeneyin · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Progressive overload — heavier than Phase 1 · Shoulders, triceps, biceps</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-90s-ride-ben-alldis-1712597106" target="_blank">🚴 45 min PZ Endurance 90s — Ben Alldis · Electronic <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Easy Z2 · Active recovery from Monday</div>
+          <div class="zz"><span class="zt z2">Z2 Easy</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-erik-jager-1698335703" target="_blank">🔥 10 min Core Strength — Erik Jäger · Rock <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Peloton Core Strength</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-denis-morton-1710278830" target="_blank">🚴 45 min PZ Max — Denis Morton <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">4x6 min Z4 @ 212–235w · 3 min Z1 between · Key session this week</div>
+          <div class="zz"><span class="zt z4">Z4</span><span class="zt z1">Z1 Rest</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/15-min-chest-back-strength-adrian-williams-1719316606" target="_blank">💪 15 min Chest & Back — Adrian Williams · Hip-Hop <span class="bd">15 min</span><span class="li">↗</span></a>
+          <div class="desc">Pull day · Lats, shoulders, chest · Upper body won't hurt the legs</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/60-min-power-zone-endurance-ride-christian-vande-velde-e5a4be33f724" target="_blank">🚴 45 min PZ Endurance (or 60) — Christian Vande Velde <span class="bd">45/60 min</span><span class="ob">✦ OPT 60</span><span class="li">↗</span></a>
+          <div class="desc">Z2 easy · Flush Thursday's work · Link = 60 min version</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Core finisher</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div></div>
+  </div>
+
+  <!-- W5 -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W5</div><div><div class="wt">Muscular Endurance Push</div><div class="wm"><span>4 rides · ~3.5 hrs</span><span>Longer Z4 · Harder Tuesday</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-hip-hop-ride-matt-wilpers-1646310180" target="_blank">🚴 45 min PZ Endurance Hip Hop — Matt Wilpers <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 · 2x15 min Z3 sustained · Simulate race pacing</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3 Sustained</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-chest-back-strength-callie-gullickson-1682509620" target="_blank">💪 20 min Chest & Back — Callie Gullickson · Pop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">EMOM format · Shoulders, chest, mid-back</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-matt-wilpers-1573123740" target="_blank">🚴 45 min PZ Max — Matt Wilpers · Pop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">3x8 min Z4 @ 215–235w · 3 min Z1 between · Toughest Tuesday yet</div>
+          <div class="zz"><span class="zt z4">Z4</span><span class="zt z1">Z1</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Peloton Core Strength</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-charlotte-weidenbach-7b95b2a46335" target="_blank">🚴 45 min PZ Endurance — Charlotte Weidenbach · Rock <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 recovery · Flush Tuesday's threshold work · No heroics</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-chest-back-strength-chase-tucker-1631723700" target="_blank">💪 20 min Chest & Back — Chase Tucker · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Shoulders, mid-back, chest · Pull focus</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-denis-morton-1580993340" target="_blank">🚴 45 min PZ Endurance — Denis Morton · Pop <span class="bd">45/60 min</span><span class="ob">✦ OPT 60</span><span class="li">↗</span></a>
+          <div class="desc">Z2 with 2x8 min Z3 · If 60 min, add one more Z3 block</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-erik-jager-1698335703" target="_blank">🔥 10 min Core Strength — Erik Jäger · Rock <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Core finisher</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div>
+    <div class="tip"><div class="tip-h">Fueling Note — Start Now</div><p>On rides over 45 min, take in 30–40g carbs per hour from the 20 min mark. Gels, chews, bananas — test what works for your gut now, not on race day.</p></div>
+    </div>
+  </div>
+
+  <!-- W6 Recovery -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W6</div><div><div class="wt">Recovery Week</div><div class="wm"><span>4 rides · ~2.5 hrs</span><span>Volume drops · Intensity maintained</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-classic-rock-charlotte-weidenbach-1705902914" target="_blank">🚴 45 min PZ Endurance Classic Rock — Charlotte Weidenbach <span class="bd">30 min</span><span class="li">↗</span></div>
+          <div class="desc">Stop at 30 min · Z1-Z2 · Notice how strong you feel vs Week 1</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/15-min-arms-shoulders-strength-assal-arian-1686326400" target="_blank">💪 15 min Arms & Shoulders — Assal Arian · Pop <span class="bd">15 min</span><span class="li">↗</span></a>
+          <div class="desc">Shoulders, triceps, traps · High reps, lower weight</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-matt-wilpers-1701521699" target="_blank">🚴 45 min PZ Endurance — Matt Wilpers · Pop <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Z2 · 2x7 min Z3 — controlled, not a race</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Peloton Core</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-christian-vande-velde-297e26ea9568" target="_blank">🚴 45 min PZ Endurance — Christian Vande Velde <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Easy Z2 · Let legs bounce back</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-chest-back-strength-jermaine-johnson-1700565910" target="_blank">💪 20 min Chest & Back — Jermaine Johnson · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Light chest, shoulders, mid-back</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-edm-ben-alldis-1653372000" target="_blank">🚴 45 min PZ Endurance EDM — Ben Alldis <span class="bd">30 min</span><span class="ob">✦ OPT 45</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 30 min · Z1-Z2 only · Recovery week stays easy</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">5 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop halfway · Quick only</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div></div>
+  </div>
+
+  <!-- W7 FTP Re-test -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W7</div><div><div class="wt">FTP Re-Test Week</div><div class="wm"><span>4 rides · ~3 hrs</span><span>Re-test Thursday · Update all zones</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-rock-ride-ben-alldis-d62392c9373c" target="_blank">🚴 45 min PZ Endurance Rock — Ben Alldis <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Z1-Z2 only · Save legs for Thursday's re-test</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-arms-shoulders-strength-adrian-williams-1715809997" target="_blank">💪 20 min Arms & Shoulders — Adrian Williams · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Shoulders, triceps, forearms · Upper body fine before FTP test</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-hip-hop-hannah-frankson-1711568327" target="_blank">🚴 45 min PZ Endurance Hip Hop — Hannah Frankson <span class="bd">30 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 30 min · Z1 only · Preserve legs for Thursday</div>
+          <div class="zz"><span class="zt z1">Z1</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Legs unaffected by core work</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST — Legs fresh for FTP test tomorrow</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/10-min-ftp-warm-up-ride-matt-wilpers-1690556400" target="_blank">🔁 10 min FTP Warm Up — Matt Wilpers <span class="bd">10 min FIRST</span><span class="li">↗</span></a>
+          <div class="desc">Do this first, then stack the test below</div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>THEN</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/20-min-ftp-test-ride-matt-wilpers-1690556400" target="_blank">🔥 20 min FTP Test — Matt Wilpers <span class="bd">~60 min total</span><span class="li">↗</span></a>
+          <div class="desc">Aim for highest avg output · Target: 265–275w · Update zones immediately after</div>
+          <div class="zz"><span class="zt z5">Max Effort</span></div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-recovery-ride-christian-vande-velde-2c9f5249c1e2" target="_blank">🚴 45 min PZ Recovery — Christian Vande Velde <span class="bd">30 min</span><span class="ob">✦ OPT 45</span><span class="li">↗</span></a>
+          <div class="desc">Z1 flush · Use your NEW zones after the test · Feel the difference</div>
+          <div class="zz"><span class="zt z1">Z1 Flush</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/15-min-chest-back-strength-assal-arian-62b1e5d1080d" target="_blank">💪 15 min Chest & Back — Assal Arian · R&B <span class="bd">15 min</span><span class="li">↗</span></a>
+          <div class="desc">Light — legs recovering, upper body fair game</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div>
+    <div class="tip"><div class="tip-h">After Re-Test: Update Everything</div><p>Update zones in Peloton immediately — every future session recalibrates. Runners typically see a solid jump here. Expect 265–280w if you've stayed consistent.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 3 ═══ -->
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-num">03</div>
+    <div class="phase-info"><h2>PEAK & TAPER</h2><p>Weeks 8–10 · Peak intensity · Race-ready taper · June 8</p></div>
+    <div class="phase-badge">Race Prep</div>
+  </div>
+
+  <!-- W8 -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W8</div><div><div class="wt">Peak Intensity — Biggest Week</div><div class="wm"><span>4 rides · ~3.5 hrs</span><span>Z4-Z5 Tuesday · Best week for optional 60</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-charlotte-weidenbach-2225f1d1ccb8" target="_blank">🚴 45 min PZ Endurance — Charlotte Weidenbach <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 · 2x15 min Z3 sustained · Longest Z3 blocks of the plan</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3 Long</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-chest-back-strength-assal-arian-1709137498" target="_blank">💪 20 min Chest & Back — Assal Arian · Pop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Shoulders, chest, lats · Looking strong by now</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-matt-wilpers-1711801537" target="_blank">🚴 45 min PZ Max — Matt Wilpers · Hip-Hop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">4x6 min Z4 · Last 2 reps push into Z5 @ 245–260w · Hardest ride of the plan</div>
+          <div class="zz"><span class="zt z4">Z4</span><span class="zt z5">Z5 Finish</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-erik-jager-1698335703" target="_blank">🔥 10 min Core Strength — Erik Jäger · Rock <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Keep it short after hard ride</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-denis-morton-1694553801" target="_blank">🚴 45 min PZ Endurance — Denis Morton · Pop <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 recovery · Flush Tuesday · Stay out of Z4</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-chest-back-strength-matty-maggiacomo-1629046260" target="_blank">💪 20 min Chest & Back — Matty Maggiacomo · Pop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Pull day · Shoulders, chest, lats</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/60-min-power-zone-endurance-ride-matt-wilpers-1607172660" target="_blank">🚴 45 min PZ Endurance (or 60) — Matt Wilpers · Hip-Hop <span class="bd">45/60 min</span><span class="ob">✦ OPT 60</span><span class="li">↗</span></a>
+          <div class="desc">Z2 with 2x12 min Z3 · If 60 min, add a 3rd Z3 block · Best long-ride substitute</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Core finisher</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div></div>
+  </div>
+
+  <!-- W9 Taper -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W9</div><div><div class="wt">Taper Begins — Stay Sharp</div><div class="wm"><span>4 rides · ~3 hrs</span><span>Volume drops · Edge stays</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-classic-rock-sam-yo-1719381322" target="_blank">🚴 45 min PZ Endurance Classic Rock — Sam Yo <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">Z2 · 2x10 min Z3 — reduced but still present</div>
+          <div class="zz"><span class="zt z2">Z2</span><span class="zt z3">Z3</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/20-min-arms-shoulders-strength-tunde-oyeneyin-1695758877" target="_blank">💪 20 min Arms & Shoulders — Tunde Oyeneyin · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Last heavy upper body session before race</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-denis-morton-1710278830" target="_blank">🚴 45 min PZ Max — Denis Morton <span class="bd">45 min</span><span class="li">↗</span></a>
+          <div class="desc">3x6 min Z4 · Keep legs sharp without piling on fatigue</div>
+          <div class="zz"><span class="zt z4">Z4</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-andy-speer-1683122400" target="_blank">🔥 10 min Core Strength — Andy Speer · Pop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Peloton Core</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+      <div class="dr">
+        <div class="dn">Thu</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-hip-hop-ride-matt-wilpers-1646310180" target="_blank">🚴 45 min PZ Endurance Hip Hop — Matt Wilpers <span class="bd">35 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 35 min · Z1-Z2 · Legs should feel springy</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-light-weights-ben-alldis-1693468800" target="_blank">💪 10 min Arms & Light Weights — Ben Alldis · Electronic <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Pump only — no fatigue</div>
+        </div>
+      </div>
+
+      <div class="dr opt">
+        <div class="dn">Fri</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-country-ride-denis-morton-1697896490" target="_blank">🚴 45 min PZ Endurance Country — Denis Morton <span class="bd">30 min</span><span class="ob">✦ OPT 45</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 30 min · Z2 only · Taper week — resist doing more</div>
+          <div class="zz"><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr opt" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-erik-jager-1698335703" target="_blank">🔥 10 min Core Strength — Erik Jäger · Rock <span class="bd">5 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop halfway · Last core session</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+      <div class="dr rest"><div class="dn">Sun</div><div class="wb"><div style="font-size:12px;font-weight:600">REST</div></div></div>
+
+    </div></div>
+  </div>
+
+  <!-- W10 Race Week -->
+  <div class="week" onclick="toggleWeek(this)">
+    <div class="week-header"><div class="wn">W10</div><div><div class="wt">Race Week 🏁</div><div class="wm"><span>June 8 · Stay fresh · Trust the work</span></div></div><div class="wtog">▾</div></div>
+    <div class="week-body"><div class="days">
+
+      <div class="dr">
+        <div class="dn">Mon</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-endurance-ride-christine-dercole-1697399662" target="_blank">🚴 45 min PZ Endurance — Christine D'Ercole · Alt <span class="bd">25 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 25 min · Z1-Z2 · Keep blood moving, nothing more</div>
+          <div class="zz"><span class="zt z1">Z1</span><span class="zt z2">Z2</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-arms-shoulders-strength-chase-tucker-1645539120" target="_blank">💪 10 min Arms & Shoulders — Chase Tucker · Hip-Hop <span class="bd">10 min</span><span class="li">↗</span></a>
+          <div class="desc">Pump only — no soreness going into race week</div>
+        </div>
+      </div>
+
+      <div class="dr">
+        <div class="dn">Tue</div>
+        <div class="wb">
+          <a class="cl" href="https://www.onepeloton.com/classes/cycling/45-min-power-zone-max-ride-matt-wilpers-1711801537" target="_blank">🚴 45 min PZ Max — Matt Wilpers · Hip-Hop <span class="bd">20 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop at 20 min · Use Z4 openers at the start · Wakes legs without tiring them</div>
+          <div class="zz"><span class="zt z4">Z4 Openers</span><span class="zt z1">Z1</span></div>
+        </div>
+      </div>
+      <div class="sdiv" style="margin:2px 0"><span>STACK</span></div>
+      <div class="dr" style="margin-top:-3px">
+        <div class="dn"></div>
+        <div class="wb">
+          <a class="cl str" href="https://www.onepeloton.com/classes/strength/10-min-core-strength-olivia-amato-1681923480" target="_blank">🔥 10 min Core Strength — Olivia Amato · Electronic <span class="bd">5 min</span><span class="li">↗</span></a>
+          <div class="desc">Stop halfway · Light only</div>
+        </div>
+      </div>
+
+      <div class="dr rest"><div class="dn">Wed</div><div class="wb"><div style="font-size:12px;font-weight:600">REST · Gear check · Eat well · Hydrate</div></div></div>
+      <div class="dr rest"><div class="dn">Thu</div><div class="wb"><div style="font-size:12px;font-weight:600">REST · Carb load begins · Sleep 8+ hrs</div></div></div>
+      <div class="dr rest"><div class="dn">Fri</div><div class="wb"><div style="font-size:12px;font-weight:600">REST · Legs up · Trust your training</div></div></div>
+      <div class="dr rest"><div class="dn">Sat</div><div class="wb"><div style="font-size:12px;font-weight:600">REST · Early night · Race prep done</div></div></div>
+
+      <div class="dr racerow">
+        <div class="dn">Sun</div>
+        <div class="wb">
+          <div style="font-size:13px;font-weight:700;color:var(--accent)">🏁 RACE DAY — 100 KM</div>
+          <div class="desc" style="margin-top:4px">Start Z2. Hold Z2-Z3 for km 1–60. Build in last 30km. Fuel every 20–25 min no matter what. You've done the work.</div>
+          <div class="zz" style="margin-top:6px"><span class="zt z2">Z2 Start</span><span class="zt z3">Z3 Mid</span><span class="zt z4">Z4 Finish</span></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="tip"><div class="tip-h">The One Rule for Race Day</div><p>Start in Z2. The first 30km will feel embarrassingly easy. That's exactly right. Every watt saved in the first half is a watt available when it matters — km 70–100. The riders who go out hard always crack. You won't.</p></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
 <script>
-  function toggleWeek(el) { el.classList.toggle('open'); }
-  const raceDate = new Date('2025-06-08');
-  const today = new Date(); today.setHours(0,0,0,0);
-  const diff = Math.ceil((raceDate - today) / (1000*60*60*24));
-  const el = document.getElementById('daysNum');
-  if (diff > 0) el.textContent = diff;
-  else if (diff === 0) { el.textContent = '🏁'; el.style.fontSize = '36px'; }
-  else { el.textContent = Math.abs(diff); el.style.color = 'var(--muted)'; }
+function toggleWeek(el){el.classList.toggle('open');}
+const rd=new Date('2025-06-08'),td=new Date();td.setHours(0,0,0,0);
+const diff=Math.ceil((rd-td)/(1000*60*60*24)),el=document.getElementById('daysNum');
+if(diff>0)el.textContent=diff;
+else if(diff===0){el.textContent='🏁';el.style.fontSize='36px';}
+else{el.textContent=Math.abs(diff);el.style.color='var(--muted)';}
 </script>
 </body>
 </html>
